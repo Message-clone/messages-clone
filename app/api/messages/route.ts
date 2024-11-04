@@ -9,7 +9,7 @@ export async function POST(request : Request) {
         const body = await request.json();
         const {
             message,
-            image,
+            images,
             conversationId
         }= body;
 
@@ -20,7 +20,7 @@ export async function POST(request : Request) {
         const newMessage = await prisma.message.create({
             data:{
                 body: message,
-                images:image,
+                images:images,
                 conversation: {
                     connect:{
                         id: conversationId

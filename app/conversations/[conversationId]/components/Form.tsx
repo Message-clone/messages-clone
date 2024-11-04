@@ -23,16 +23,14 @@ const Form = () => {
 
   const onSubmit: SubmitHandler<FieldValues> = (data) => {
     setValue("message", "", { shouldValidate: true });
-
     axios.post("/api/messages", {
       ...data,
       conversationId,
     });
   };
-
   const handlerUpload = (result: any) => {
     axios.post("/api/messages", {
-      image: result?.info?.secure_url,
+      images: result?.info?.secure_url,
       conversationId,
     });
   };
@@ -53,7 +51,7 @@ const Form = () => {
     >
       <CldUploadButton
         options={{ maxFiles: 1 }}
-        onUpload={handlerUpload}
+        onSuccess={handlerUpload}
         uploadPreset="xfg2hrw1"
       >
         <HiPhoto size={30} className="text-sky-500" />
