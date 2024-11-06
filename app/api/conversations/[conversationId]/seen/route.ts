@@ -1,6 +1,7 @@
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import {  NextResponse } from "next/server";
 import prisma from '@/app/libs/prismadb'
+import { pusherClient, pusherSever } from "@/app/libs/pusher";
 
 
 interface IParams{
@@ -38,6 +39,7 @@ try {
     if(!conversation){
         return new NextResponse('invalid ID', {status:400})
     }
+    
 
     const lastMessage = conversation.messages[conversation.messages.length -1];
     if(!lastMessage){
@@ -60,6 +62,19 @@ try {
             }
         }
     });
+
+
+    await pusherSever.trigger(currentUser.email,'conversation:update',{
+        id: conversationId,
+        messages:[updatedMessage]
+    });
+
+    if(lastMessage.seenIds.indexOf(currentUser.id) !== -1){
+        return NextResponse.json(conversation)
+    }
+
+    await pusherSever.trigger(conversationId!,'message:update',updatedMessage)
+    
     return NextResponse.json(updatedMessage)
 
 } catch (error: any) {

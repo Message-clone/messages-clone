@@ -7,7 +7,9 @@ import { Fragment, useMemo, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { IoClose, IoTrash } from "react-icons/io5";
 import Avatar from "@/app/components/Avatar";
-import Modal from "@/app/components/Modal";
+import ConfirmModal from "@/app/components/ConfirmModal";
+import AvatarGroup from "@/app/components/AvatarGroup";
+import useActiveList from "@/app/hooks/userActiveList";
 
 interface ProfileDrawerProps {
   isOpen: boolean;
@@ -23,7 +25,9 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
   data,
 }) => {
   const otherUser = useOtherUser(data);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [confirmModal, setConfirmModal] = useState(false);
+  const { members } = useActiveList();
+  const isActive = members.indexOf(otherUser?.email!) !== -1;
 
   const joinedDate = useMemo(() => {
     return format(new Date(otherUser.createdAt), "PP");
@@ -37,16 +41,15 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
     if (data.isGroup) {
       return `${data.users.length} members`;
     }
-    return "Active";
-  }, [data]);
+    return isActive ? "Active" : "Offline";
+  }, [data, isActive]);
 
   return (
     <>
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <div className="bg-white p-5 ">
-          <p>Hello Modal</p>
-        </div>
-      </Modal>
+      <ConfirmModal
+        isOpen={confirmModal}
+        onClose={() => setConfirmModal(false)}
+      />
 
       <Transition.Root show={isOpen} as={Fragment}>
         <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -90,7 +93,11 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
                       <div className="relative mt-6 flex-1 px-4 sm:px-6">
                         <div className="flex flex-col items-center">
                           <div className="mb-2">
-                            <Avatar user={otherUser} />
+                            {data.isGroup ? (
+                              <AvatarGroup users={data.users} />
+                            ) : (
+                              <Avatar user={otherUser} />
+                            )}
                           </div>
                           <div>{title}</div>
                           <div className="text-sm text-gray-500">
@@ -98,7 +105,7 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
                           </div>
                           <div className="flex gap-10 my-8">
                             <div
-                              onClick={() => setIsModalOpen(true)}
+                              onClick={() => setConfirmModal(true)}
                               className="flex flex-col gap-3 items-center cursor-pointer hover:opacity-75"
                             >
                               <div className="w-10 h-10 bg-neutral-100 flex rounded-full justify-center items-center">

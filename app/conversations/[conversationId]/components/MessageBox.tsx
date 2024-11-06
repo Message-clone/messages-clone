@@ -4,6 +4,8 @@ import clsx from "clsx";
 import Avatar from "@/app/components/Avatar";
 import { format } from "date-fns";
 import Image from "next/image";
+import { useState } from "react";
+import ImageModal from "@/app/conversations/[conversationId]/components/ImageModal";
 
 interface MessageBoxProps {
   data: FullMessageType;
@@ -12,6 +14,7 @@ interface MessageBoxProps {
 
 const MessageBox: React.FC<MessageBoxProps> = ({ data, isLast }) => {
   const { data: session } = useSession();
+  const [imageModalOpen, setImageModalOpen] = useState(false);
 
   const isOwn = session?.user?.email === data?.sender?.email;
 
@@ -39,18 +42,30 @@ const MessageBox: React.FC<MessageBoxProps> = ({ data, isLast }) => {
             data.images ? "rounded-md p-0" : "rounded-full py-2 px-3"
           )}
         >
+          <ImageModal
+            src={data.images}
+            isOpen={imageModalOpen}
+            onClose={() => setImageModalOpen(false)}
+          />
+
           {data.images ? (
             <Image
+              onClick={() => setImageModalOpen}
               src={data.images}
               alt="Image"
               width="288"
               height="288"
-              className="object-cover cursor-pointer hover:scale-110 transition transform"
+              className="object-cover 
+              cursor-pointer
+               hover:scale-110 
+               transition 
+               transform"
             />
           ) : (
             <div>{data.body}</div>
           )}
         </div>
+
         {isLast && isOwn && seenList && (
           <div className="text-sm font-light text-gray-500">{`Seen by ${seenList}`}</div>
         )}
